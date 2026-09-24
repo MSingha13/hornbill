@@ -1,0 +1,6 @@
+{
+  "name": "ระบบติดตามนกกก HORNBILL TRACKING",
+  "description": "ระบบติดตามและวิจัยเส้นทางการบินของนกกก (Great Hornbill Tracking System) เชื่อมโยงข้อมูลพิกัดดาวเทียม GISTDA และระบบสนทนาเสียง AI Live",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

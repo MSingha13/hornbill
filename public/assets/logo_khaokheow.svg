@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" width="240" height="240">
+  <defs>
+    <linearGradient id="kkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0e5331"/>
+      <stop offset="60%" stop-color="#0a3c23"/>
+      <stop offset="100%" stop-color="#052415"/>
+    </linearGradient>
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="mountain1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="mountain2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="sunGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <path id="textArcTop" d="M 32,120 A 88,88 0 0,1 208,120" fill="none"/>
+    <path id="textArcBottom" d="M 208,120 A 88,88 0 0,1 32,120" fill="none"/>
+  </defs>
+
+  <!-- Outer Ring Base -->
+  <circle cx="120" cy="120" r="116" fill="#ffffff" stroke="#e2e8f0" stroke-width="2"/>
+  <circle cx="120" cy="120" r="112" fill="url(#kkBg)"/>
+  <circle cx="120" cy="120" r="108" fill="none" stroke="url(#goldRing)" stroke-width="2.5" stroke-dasharray="2 3"/>
+
+  <!-- Inner Center Shield -->
+  <circle cx="120" cy="120" r="70" fill="#0f3925" stroke="url(#goldRing)" stroke-width="2"/>
+
+  <!-- Sun rising behind mountains -->
+  <circle cx="120" cy="95" r="28" fill="url(#sunGrad)" opacity="0.85"/>
+
+  <!-- Mountain Ranges (เขาเขียว) -->
+  <!-- Back ridge -->
+  <path d="M 52,145 Q 85,92 120,110 Q 155,90 188,145 Z" fill="url(#mountain2)" opacity="0.8"/>
+  <!-- Front ridge -->
+  <path d="M 50,158 Q 80,118 108,126 Q 140,105 190,158 Z" fill="url(#mountain1)"/>
+
+  <!-- Wildlife Silhouettes: Deer / Hornbill / Flora in Gold/White -->
+  <!-- Flying Hornbill silhouette in sky -->
+  <path d="M 85,82 Q 95,78 105,82 Q 97,85 92,89 Q 89,84 85,82 Z" fill="#fbbf24"/>
+  <path d="M 92,83 Q 86,75 80,74 Q 85,78 88,83 Z" fill="#fbbf24"/>
+
+  <!-- Wildlife Deer & Tree Silhouette at bottom center -->
+  <g transform="translate(100, 118) scale(0.65)" fill="#ffffff">
+    <!-- Deer head & Antlers -->
+    <path d="M 30,35 Q 31,25 35,22 Q 38,20 40,28 Q 42,32 38,42 Q 33,52 30,55 L 25,55 Q 27,45 30,35 Z"/>
+    <!-- Left antler -->
+    <path d="M 33,23 Q 28,15 22,12 Q 25,18 29,20 Q 24,10 18,7 Q 22,14 28,18 Z" fill="#fbbf24"/>
+    <!-- Right antler -->
+    <path d="M 37,23 Q 42,15 48,12 Q 45,18 41,20 Q 46,10 52,7 Q 48,14 42,18 Z" fill="#fbbf24"/>
+    <!-- Forest trees -->
+    <path d="M 8,55 L 14,38 L 11,38 L 16,26 L 14,26 L 19,16 L 24,26 L 22,26 L 27,38 L 24,38 L 30,55 Z" fill="#34d399" opacity="0.6"/>
+  </g>
+
+  <!-- Stars / Accents -->
+  <polygon points="120,44 122,49 127,49 123,52 125,57 120,54 115,57 117,52 113,49 118,49" fill="#fbbf24"/>
+  <circle cx="55" cy="120" r="3" fill="#fbbf24"/>
+  <circle cx="185" cy="120" r="3" fill="#fbbf24"/>
+
+  <!-- Circular Thai Text on Top Arc -->
+  <text font-family="'Prompt', 'Sarabun', sans-serif" font-size="13" font-weight="bold" fill="#ffffff" letter-spacing="1.5">
+    <textPath href="#textArcTop" startOffset="50%" text-anchor="middle">
+      สวนสัตว์เปิดเขาเขียว
+    </textPath>
+  </text>
+
+  <!-- Circular English Text on Bottom Arc -->
+  <text font-family="'Montserrat', 'Prompt', sans-serif" font-size="10.5" font-weight="800" fill="#fde68a" letter-spacing="2">
+    <textPath href="#textArcBottom" startOffset="50%" text-anchor="middle">
+      KHAO KHEOW OPEN ZOO
+    </textPath>
+  </text>
+</svg>
