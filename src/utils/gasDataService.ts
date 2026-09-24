@@ -97,6 +97,7 @@ export function transformGasData(response: GasApiResponse, fallbackProfile: Horn
       address: r.address,
       positionId: r.positionId,
       rawRecordedAt: r.recordedAt || r.displayTime,
+      rawRecord: r,
       activity: speed > 5 ? 'กำลังบินเคลื่อนที่' : 'เกาะพัก / พักผ่อนบนกิ่งไม้',
     };
   });
@@ -110,5 +111,6 @@ export function transformGasData(response: GasApiResponse, fallbackProfile: Horn
     lastSyncedAt: new Date().toLocaleTimeString('th-TH'),
     latestPoint,
     history,
+    rawGasRecords: rawRecords,
   };
 }

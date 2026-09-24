@@ -76,45 +76,69 @@ export default function App() {
     fetchLiveTelemetry(true);
   };
 
-  // Export CSV with UTF-8 BOM for Thai character display in Excel
+  // Export CSV matching Google Sheet schema & columns exactly
   const handleExportCSV = () => {
-    const data = selectedHornbill.history;
-    const headers = [
-      'ลำดับ (No.)',
-      'รหัสติดตาม (Code)',
-      'วันที่ (Date)',
-      'เวลา (Time)',
-      'ละติจูด (Lat)',
-      'ลองจิจูด (Lng)',
-      'พื้นที่ (Location)',
-      'ระดับแบตเตอรี่ (%)',
-      'อุณหภูมิ (°C)',
-      'ระดับความสูง (m)',
-      'ความเร็ว (km/h)',
-      'พฤติกรรม (Activity)',
+    // Exact column headers matching Google Sheet
+    const sheetHeaders = [
+      'recordedAt',
+      'assetId',
+      'positionId',
+      'latitude',
+      'longitude',
+      'displayTime',
+      'receivedTime',
+      'utcTime',
+      'localTime',
+      'battery',
+      'temperature',
+      'speed',
+      'altitude',
+      'address',
     ];
 
-    const rows = data.map((d) => [
-      d.index,
-      `"${d.code}"`,
-      `"${d.date}"`,
-      `"${d.time}"`,
-      d.lat.toFixed(4),
-      d.lng.toFixed(4),
-      `"${d.location}"`,
-      d.battery.toFixed(2),
-      d.temp.toFixed(2),
-      d.altitudeM || 0,
-      d.speedKmh || 0,
-      `"${d.activity || ''}"`,
-    ]);
+    const formatCell = (val: any) => {
+      if (val === undefined || val === null) return '""';
+      const str = String(val);
+      return `"${str.replace(/"/g, '""')}"`;
+    };
 
-    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    let rows: string[][] = [];
+
+    // If raw Google Sheet records exist on the profile, use them directly for 100% schema fidelity
+    if (selectedHornbill.rawGasRecords && selectedHornbill.rawGasRecords.length > 0) {
+      rows = selectedHornbill.rawGasRecords.map((rec) => {
+        return sheetHeaders.map((header) => formatCell(rec[header] ?? ''));
+      });
+    } else {
+      // Otherwise extract from history points
+      rows = selectedHornbill.history.map((pt) => {
+        const raw = pt.rawRecord || {};
+        return [
+          formatCell(raw.recordedAt ?? pt.rawRecordedAt ?? `${pt.date} ${pt.time}`),
+          formatCell(raw.assetId ?? pt.code),
+          formatCell(raw.positionId ?? pt.positionId ?? ''),
+          formatCell(raw.latitude ?? pt.lat),
+          formatCell(raw.longitude ?? pt.lng),
+          formatCell(raw.displayTime ?? `${pt.date} ${pt.time}`),
+          formatCell(raw.receivedTime ?? ''),
+          formatCell(raw.utcTime ?? ''),
+          formatCell(raw.localTime ?? ''),
+          formatCell(raw.battery ?? pt.battery),
+          formatCell(raw.temperature ?? pt.temp),
+          formatCell(raw.speed ?? (pt.speedKmh !== undefined ? pt.speedKmh : '')),
+          formatCell(raw.altitude ?? (pt.altitudeM !== undefined ? pt.altitudeM : '')),
+          formatCell(raw.address ?? pt.address ?? pt.location ?? ''),
+        ];
+      });
+    }
+
+    // Include UTF-8 BOM so Excel opens Thai and unicode characters correctly
+    const csvContent = '\uFEFF' + [sheetHeaders.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `hornbill_${selectedHornbill.code}_tracking_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `hornbill_${selectedHornbill.code}_sheet_export_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -163,40 +187,6 @@ export default function App() {
             {/* Overview / Dashboard Tab matching Image 2 */}
             {activeTab === 'overview' && (
               <>
-                {/* Live Data Connection Banner */}
-                {selectedHornbill.isLiveFeed && (
-                  <div className="bg-emerald-950/90 backdrop-blur-md text-white rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-sm border border-emerald-500/30">
-                    <div className="flex items-center gap-2.5">
-                      <span className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                      </span>
-                      <span className="text-xs font-semibold text-emerald-300">
-                        เชื่อมต่อสัญญาณข้อมูลดาวเทียมสด (Google Apps Script Live Stream)
-                      </span>
-                      <span className="hidden md:inline-block text-[11px] bg-emerald-900/80 px-2 py-0.5 rounded text-emerald-200 font-mono">
-                        {selectedHornbill.history.length} จุดพิกัด
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-xs text-emerald-200">
-                      <span>อัปเดตอัตโนมัติทุก 30 วินาที</span>
-                      {selectedHornbill.lastSyncedAt && (
-                        <span className="text-emerald-400 font-mono text-[11px]">
-                          (ซิงก์ล่าสุด {selectedHornbill.lastSyncedAt} น.)
-                        </span>
-                      )}
-                      <button
-                        onClick={handleRefresh}
-                        disabled={isRefreshing}
-                        className="text-[11px] bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-2.5 py-1 rounded-lg transition active:scale-95 cursor-pointer disabled:opacity-50"
-                      >
-                        {isRefreshing ? 'กำลังดึงข้อมูล...' : 'ดึงข้อมูลทันที'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
                 {/* 4 Metric KPI Cards with Dynamic Selected Point */}
                 <MetricCards
                   hornbill={selectedHornbill}

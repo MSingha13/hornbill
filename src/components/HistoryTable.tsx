@@ -73,6 +73,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
           {/* Export CSV Button */}
           <button
             onClick={onExportCSV}
+            title="ส่งออกไฟล์ CSV ตามโครงสร้าง Google Sheet"
             className="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 hover:text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-200 shadow-2xs transition active:scale-95 cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-emerald-600" />

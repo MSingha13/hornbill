@@ -245,7 +245,7 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
             <img src="${hornbill.photoUrl}" style="width: 100%; height: 100%; object-fit: cover;"/>
           </div>
           <div>
-            <b style="color: #047857; font-size: 14px;">${hornbill.name} (${hornbill.code})</b><br/>
+            <b style="color: #047857; font-size: 14px;">${hornbill.name ? `${hornbill.name} (${hornbill.code})` : hornbill.code}</b><br/>
             <span style="font-size: 11px; color: #64748b;">${hornbill.thaiSpecies}</span>
           </div>
         </div>

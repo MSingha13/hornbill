@@ -84,7 +84,7 @@ export const KKOZ01_HISTORY: TrackingPoint[] = [
 export const HORNBILLS_LIST: HornbillProfile[] = [
   {
     code: 'KKOZ01',
-    name: 'เจ้าขุนตาล (Khun Tan)',
+    name: '',
     thaiSpecies: 'นกกก หรือ นกกาฮัง',
     englishSpecies: 'Great Hornbill',
     scientificName: 'Buceros bicornis',

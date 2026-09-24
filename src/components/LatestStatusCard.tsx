@@ -65,9 +65,11 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
           <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-md">
             {hornbill.scientificName}
           </div>
-          <div className="absolute bottom-2 left-2 bg-emerald-900/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-lg">
-            {hornbill.name}
-          </div>
+          {hornbill.name ? (
+            <div className="absolute bottom-2 left-2 bg-emerald-900/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-lg">
+              {hornbill.name}
+            </div>
+          ) : null}
           {isCustomPoint && (
             <div className="absolute bottom-2 right-2 bg-amber-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
               จุดที่ {active.index} ({active.time} น.)
@@ -80,6 +82,11 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
             <span className="text-slate-500 font-medium">รหัสติดตาม</span>
             <span className="font-bold text-slate-900">{hornbill.code}</span>
+          </div>
+
+          <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
+            <span className="text-slate-500 font-medium">ชื่อ</span>
+            <span className="text-slate-400 italic">{hornbill.name || '-'}</span>
           </div>
 
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">

@@ -50,10 +50,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-xs font-semibold tracking-wider text-emerald-800 uppercase bg-emerald-100/80 px-2 py-0.5 rounded-md">
                 ระบบติดตามนกกก
               </span>
-              <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-white/80 px-2 py-0.5 rounded-full border border-emerald-200/60 shadow-2xs">
-                <span className={`w-2 h-2 rounded-full ${selectedHornbill.isLiveFeed ? 'bg-emerald-500 animate-pulse' : 'bg-emerald-500'}`}></span>
-                <span>{selectedHornbill.isLiveFeed ? 'ดาวเทียม Live (GAS Connected)' : 'สัญญาณดาวเทียมปกติ'}</span>
-              </div>
             </div>
 
             <div className="flex items-baseline gap-2 mt-0.5">
@@ -72,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   {hornbills.map((h) => (
                     <option key={h.code} value={h.code}>
-                      {h.code} - {h.name}
+                      {h.name ? `${h.code} - ${h.name}` : h.code}
                     </option>
                   ))}
                 </select>
@@ -138,6 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Export CSV Button */}
             <button
               onClick={onExportCSV}
+              title="ส่งออกไฟล์ CSV ตามโครงสร้าง Google Sheet"
               className="flex items-center gap-1.5 bg-[#f59e0b] hover:bg-[#d97706] text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />

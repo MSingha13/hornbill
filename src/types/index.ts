@@ -14,6 +14,7 @@ export interface TrackingPoint {
   address?: string;
   positionId?: string;
   rawRecordedAt?: string;
+  rawRecord?: Record<string, any>;
 }
 
 export interface HornbillProfile {
@@ -36,6 +37,7 @@ export interface HornbillProfile {
   history: TrackingPoint[];
   isLiveFeed?: boolean;
   lastSyncedAt?: string;
+  rawGasRecords?: Record<string, any>[];
 }
 
 export interface OrganizationInfo {
