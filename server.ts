@@ -1,10 +1,14 @@
 import express from 'express';
 import http from 'http';
+import dns from 'node:dns';
 import { WebSocketServer, WebSocket } from 'ws';
 import { GoogleGenAI, Modality } from '@google/genai';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// Prefer IPv4 for faster and reliable Google Apps Script fetching
+dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config();
 
@@ -187,6 +191,34 @@ let cachedTrackingData: any = null;
 let lastFetchTime = 0;
 const CACHE_TTL_MS = 15000; // 15 seconds cache
 
+async function fetchFromGAS(): Promise<any> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      signal: controller.signal,
+      redirect: 'follow',
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Google Apps Script responded with ${response.status}`);
+    }
+    const data = await response.json();
+    cachedTrackingData = data;
+    lastFetchTime = Date.now();
+    return data;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+// Pre-fetch on boot
+fetchFromGAS().catch((err) => {
+  console.warn('Initial GAS fetch error:', err?.message);
+});
+
 app.get('/api/tracking', async (_req, res) => {
   const now = Date.now();
   if (cachedTrackingData && (now - lastFetchTime) < CACHE_TTL_MS) {
@@ -194,23 +226,7 @@ app.get('/api/tracking', async (_req, res) => {
   }
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000);
-    const response = await fetch(APPS_SCRIPT_URL, {
-      signal: controller.signal,
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`Google Apps Script responded with ${response.status}`);
-    }
-
-    const data = await response.json();
-    cachedTrackingData = data;
-    lastFetchTime = now;
+    const data = await fetchFromGAS();
     return res.json({ ...data, fromCache: false });
   } catch (error: any) {
     console.warn('Error fetching from Google Apps Script:', error?.message);

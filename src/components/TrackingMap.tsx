@@ -22,6 +22,8 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
   const markersGroupRef = useRef<L.LayerGroup | null>(null);
   const latestMarkerRef = useRef<L.Marker | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const markersMapRef = useRef<Map<number, L.Layer>>(new Map());
+  const highlightMarkerRef = useRef<L.Marker | null>(null);
 
   const [currentLayer, setCurrentLayer] = useState<MapLayerType>('topo');
   const [showLayerMenu, setShowLayerMenu] = useState(false);
@@ -47,10 +49,12 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
+      const initialLat = hornbill.latestPoint ? hornbill.latestPoint.lat : 38.959176;
+      const initialLng = hornbill.latestPoint ? hornbill.latestPoint.lng : -77.452271;
       const map = L.map(mapContainerRef.current, {
         zoomControl: false,
         attributionControl: false,
-      }).setView([17.265, 98.78], 10);
+      }).setView([initialLat, initialLng], 11);
 
       const tileLayer = L.tileLayer(tileLayers[currentLayer].url, {
         maxZoom: 18,
@@ -88,6 +92,11 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
     if (!map || !markersGroup) return;
 
     markersGroup.clearLayers();
+    markersMapRef.current.clear();
+    if (highlightMarkerRef.current) {
+      highlightMarkerRef.current.remove();
+      highlightMarkerRef.current = null;
+    }
 
     const points = hornbill.history;
     if (!points || points.length === 0) return;
@@ -118,22 +127,31 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
       if (isLatest) return; // Latest gets special custom marker
 
       const circleMarker = L.circleMarker([pt.lat, pt.lng], {
-        radius: 6.5,
+        radius: 7,
         fillColor: '#ffffff',
         color: '#047857',
-        weight: 3,
+        weight: 3.5,
         opacity: 1,
         fillOpacity: 1,
       });
 
+      const latCoord = `${Math.abs(pt.lat).toFixed(6)}° ${pt.lat >= 0 ? 'N' : 'S'}`;
+      const lngCoord = `${Math.abs(pt.lng).toFixed(6)}° ${pt.lng >= 0 ? 'E' : 'W'}`;
+
       circleMarker.bindPopup(`
-        <div style="font-family: 'Prompt', sans-serif; font-size: 12px; line-height: 1.4;">
-          <b style="color: #047857;">${pt.code} (จุดที่ ${pt.index})</b><br/>
-          <span>เวลา: ${pt.date} ${pt.time} น.</span><br/>
-          <span>พิกัด: ${pt.lat.toFixed(4)}°N, ${pt.lng.toFixed(4)}°E</span><br/>
-          <span>พื้นที่: ${pt.address || pt.location}</span><br/>
-          <span>ความสูง: ${pt.altitudeM || '-'} ม.</span><br/>
-          <span>แบตเตอรี่: ${pt.battery}% | อุณหภูมิ: ${pt.temp}°C</span>
+        <div style="font-family: 'Prompt', sans-serif; font-size: 12px; line-height: 1.45; min-width: 180px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+            <b style="color: #047857; font-size: 13px;">${pt.code} (จุดที่ ${pt.index})</b>
+            <span style="font-size: 10px; background: #ecfdf5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-weight: 600;">ประวัติ</span>
+          </div>
+          <div style="color: #334155;">
+            <div>🕒 <b>เวลา:</b> ${pt.date} ${pt.time} น.</div>
+            <div>📍 <b>พิกัด:</b> ${latCoord}, ${lngCoord}</div>
+            <div>🏞️ <b>พื้นที่:</b> ${pt.address || pt.location}</div>
+            <div>🔋 <b>แบตเตอรี่:</b> ${pt.battery.toFixed(2)}%</div>
+            <div>🌡️ <b>อุณหภูมิ:</b> ${pt.temp.toFixed(2)} °C</div>
+            ${pt.speedKmh ? `<div>💨 <b>ความเร็ว:</b> ${pt.speedKmh} km/h</div>` : ''}
+          </div>
         </div>
       `);
 
@@ -142,70 +160,15 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
       });
 
       circleMarker.addTo(markersGroup);
+      markersMapRef.current.set(pt.index, circleMarker);
     });
-
-    // Check if points are in Thailand region or other area
-    const isLampangArea = latLngs.some(([lat, lng]) => lat > 15 && lat < 20 && lng > 97 && lng < 101);
-
-    if (isLampangArea) {
-      // Add area labels on map (Doi Khun Tan, Lampang, Chae Son) matching Image 2
-      const areaLabels = [
-        { name: 'อุทยานแห่งชาติดอยขุนตาล', coords: [17.185, 98.61] as [number, number] },
-        { name: 'ลำปาง', coords: [17.205, 98.74] as [number, number], isCity: true },
-        { name: 'อุทยานแห่งชาติแจ้ซ้อน', coords: [17.31, 98.98] as [number, number] },
-      ];
-
-      areaLabels.forEach(area => {
-        const labelIcon = L.divIcon({
-          className: 'custom-area-label',
-          html: `
-            <div style="
-              font-family: 'Prompt', sans-serif;
-              font-size: ${area.isCity ? '14px' : '12px'};
-              font-weight: 700;
-              color: ${area.isCity ? '#334155' : '#1e3a2b'};
-              text-shadow: 0 1px 3px rgba(255,255,255,0.9), 0 0 2px #fff;
-              white-space: nowrap;
-              pointer-events: none;
-              background: rgba(255, 255, 255, 0.4);
-              padding: 2px 6px;
-              border-radius: 6px;
-              backdrop-filter: blur(2px);
-            ">
-              ${area.name}
-            </div>
-          `,
-          iconAnchor: [40, 10],
-        });
-        L.marker(area.coords, { icon: labelIcon, interactive: false }).addTo(markersGroup);
-      });
-
-      // Highway 1 marker badge
-      const hwyIcon = L.divIcon({
-        className: 'hwy-badge',
-        html: `
-          <div style="
-            background: #ffffff;
-            border: 1.5px solid #64748b;
-            border-radius: 4px;
-            padding: 1px 5px;
-            font-weight: 800;
-            font-size: 11px;
-            color: #1e293b;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-          ">1</div>
-        `,
-        iconAnchor: [10, 10],
-      });
-      L.marker([17.24, 98.73], { icon: hwyIcon, interactive: false }).addTo(markersGroup);
-    }
 
     // Latest position marker with custom Hornbill icon and tooltip matching Image 2
     const latest = hornbill.latestPoint;
     const latestCustomIcon = L.divIcon({
-      className: 'latest-hornbill-marker',
+      className: 'latest-hornbill-marker cursor-pointer',
       html: `
-        <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+        <div style="position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer;">
           <!-- Top Tooltip pill matching Image 2 -->
           <div style="
             background: #ffffff;
@@ -287,22 +250,89 @@ export const TrackingMap: React.FC<TrackingMapProps> = ({
           </div>
         </div>
         <div style="font-size: 12px; color: #334155; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 6px;">
-          <div>📍 <b>พิกัด:</b> ${latest.lat.toFixed(4)}° N, ${latest.lng.toFixed(4)}° E</div>
-          <div>🏞️ <b>พื้นที่:</b> ${latest.address ? latest.address : `${latest.location} จ.ลำปาง`}</div>
-          <div>⛰️ <b>ระดับความสูง:</b> ${latest.altitudeM || 842} เมตร</div>
-          <div>🔋 <b>แบตเตอรี่:</b> ${latest.battery}% (ปกติ)</div>
-          <div>🌡️ <b>อุณหภูมิ:</b> ${latest.temp} °C</div>
+          <div>📍 <b>พิกัด:</b> ${Math.abs(latest.lat).toFixed(6)}° ${latest.lat >= 0 ? 'N' : 'S'}, ${Math.abs(latest.lng).toFixed(6)}° ${latest.lng >= 0 ? 'E' : 'W'}</div>
+          <div>🏞️ <b>พื้นที่:</b> ${latest.address || latest.location}</div>
+          <div>⛰️ <b>ระดับความสูง:</b> ${latest.altitudeM || 450} เมตร</div>
+          <div>🔋 <b>แบตเตอรี่:</b> ${latest.battery.toFixed(2)}%</div>
+          <div>🌡️ <b>อุณหภูมิ:</b> ${latest.temp.toFixed(2)} °C</div>
           <div>🕒 <b>อัปเดตล่าสุด:</b> ${latest.date} ${latest.time} น.</div>
         </div>
       </div>
     `);
 
+    latestMarker.on('click', () => {
+      if (onSelectPoint) onSelectPoint(latest);
+    });
+
+    markersMapRef.current.set(latest.index, latestMarker);
     latestMarkerRef.current = latestMarker;
 
     // Fit bounds smoothly with slight padding
     const bounds = L.latLngBounds(latLngs);
     map.fitBounds(bounds, { padding: [60, 60], maxZoom: 12 });
   }, [hornbill]);
+
+  // Smoothly react to selectedPoint change: flyTo and show active marker highlight
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedPoint) return;
+    const map = mapInstanceRef.current;
+
+    // Smoothly fly map to selected point coordinates
+    map.flyTo([selectedPoint.lat, selectedPoint.lng], 13, { duration: 0.85 });
+
+    // Open popup of the corresponding marker
+    const marker = markersMapRef.current.get(selectedPoint.index);
+    if (marker && 'openPopup' in marker) {
+      (marker as any).openPopup();
+    }
+
+    // Add or update active highlighted ring on the selected point
+    if (highlightMarkerRef.current) {
+      highlightMarkerRef.current.remove();
+      highlightMarkerRef.current = null;
+    }
+
+    if (markersGroupRef.current && selectedPoint.index !== 1) {
+      const activeIcon = L.divIcon({
+        className: 'selected-point-indicator',
+        html: `
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center; pointer-events: none;">
+            <div style="
+              background: #065f46;
+              color: #ffffff;
+              font-size: 11px;
+              font-weight: 700;
+              font-family: 'Prompt', sans-serif;
+              padding: 2px 8px;
+              border-radius: 9999px;
+              white-space: nowrap;
+              box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+              border: 1.5px solid #ffffff;
+              margin-bottom: 4px;
+            ">
+              📍 จุดที่ #${selectedPoint.index} (${selectedPoint.time} น.)
+            </div>
+            <div style="position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;">
+              <span style="position: absolute; inset: -4px; border-radius: 9999px; background-color: #10b981; opacity: 0.6; animation: ping 1.2s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+              <div style="width: 20px; height: 20px; border-radius: 9999px; background: #059669; border: 3px solid #ffffff; box-shadow: 0 2px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 900; font-size: 10px;">
+                ${selectedPoint.index}
+              </div>
+            </div>
+          </div>
+        `,
+        iconSize: [140, 60],
+        iconAnchor: [70, 56],
+        popupAnchor: [0, -60],
+      });
+
+      const hlMarker = L.marker([selectedPoint.lat, selectedPoint.lng], {
+        icon: activeIcon,
+        zIndexOffset: 1200,
+      }).addTo(markersGroupRef.current);
+
+      highlightMarkerRef.current = hlMarker;
+    }
+  }, [selectedPoint]);
 
   // Center on latest point or selected point
   const handleCenterOnLatest = () => {

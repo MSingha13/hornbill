@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { History, Download, ChevronRight, Filter } from 'lucide-react';
+import { History, Download, Filter } from 'lucide-react';
 import { TrackingPoint } from '../types';
 
 interface HistoryTableProps {
@@ -28,9 +28,9 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* Header Bar matching Image 2 */}
+      {/* Header Bar */}
       <div className="p-4 sm:px-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <div className="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-800">
             <History className="w-4 h-4" />
           </div>
@@ -40,9 +40,22 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
           <span className="text-xs text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200">
             {filteredHistory.length} พิกัด
           </span>
+          <span className="text-[11px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md hidden md:inline-block">
+            💡 คลิกที่แถวเพื่อเปลี่ยนตำแหน่งบนแผนที่และค่าบนการ์ด
+          </span>
         </div>
 
         <div className="flex items-center gap-2">
+          {selectedPoint && onSelectPoint && (
+            <button
+              onClick={() => onSelectPoint(history[0])}
+              className="flex items-center gap-1 bg-white hover:bg-emerald-50 text-emerald-800 text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-emerald-200 shadow-2xs transition active:scale-95 cursor-pointer"
+              title="กลับไปเลือกจุดล่าสุด"
+            >
+              <span>↺ ดูจุดล่าสุด</span>
+            </button>
+          )}
+
           {/* Filter Location */}
           <select
             value={filterLocation}
@@ -82,39 +95,49 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
               <th className="py-3 px-4 font-medium">พื้นที่</th>
               <th className="py-3 px-4 font-medium">ระดับแบตเตอรี่</th>
               <th className="py-3 px-4 font-medium">อุณหภูมิ (°C)</th>
-              <th className="py-3 px-4 text-center font-medium">รายละเอียด</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 font-normal">
             {filteredHistory.map((row) => {
-              const isSelected = selectedPoint?.index === row.index;
+              const isSelected = selectedPoint ? selectedPoint.index === row.index : row.index === 1;
               const isLatest = row.index === 1;
 
               return (
                 <tr
                   key={row.index}
                   onClick={() => onSelectPoint && onSelectPoint(row)}
-                  className={`hover:bg-emerald-50/50 cursor-pointer transition ${
-                    isSelected ? 'bg-emerald-100/50 font-medium' : isLatest ? 'bg-emerald-50/20' : ''
+                  className={`cursor-pointer transition-all duration-150 ${
+                    isSelected
+                      ? 'bg-emerald-100/70 border-l-4 border-l-emerald-600 font-medium text-slate-900 shadow-2xs'
+                      : 'hover:bg-emerald-50/40 text-slate-600'
                   }`}
                 >
                   <td className="py-3 px-4 font-semibold text-slate-900">
-                    <div className="flex items-center gap-1.5">
-                      {isLatest && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <div className="flex items-center gap-2">
+                      {isLatest ? (
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-2xs shadow-emerald-400" title="จุดล่าสุด"></span>
+                      ) : isSelected ? (
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-2xs shadow-amber-400" title="จุดที่กำลังเลือก"></span>
+                      ) : (
+                        <span className="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
                       )}
                       <span>{row.index}</span>
+                      {isSelected && (
+                        <span className="text-[10px] bg-emerald-700 text-white font-bold px-1.5 py-0.2 rounded-md shadow-2xs">
+                          เลือกอยู่
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="py-3 px-4 font-semibold text-slate-800">
-                    <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">
+                    <span className={`px-2 py-0.5 rounded ${isSelected ? 'bg-emerald-200 text-emerald-950' : 'bg-slate-100 text-slate-700'}`}>
                       {row.code}
                     </span>
                   </td>
                   <td className="py-3 px-4 whitespace-nowrap">{row.date}</td>
                   <td className="py-3 px-4 font-medium text-slate-800">{row.time}</td>
-                  <td className="py-3 px-4 font-mono font-medium">{row.lat.toFixed(4)}</td>
-                  <td className="py-3 px-4 font-mono font-medium">{row.lng.toFixed(4)}</td>
+                  <td className="py-3 px-4 font-mono font-medium">{row.lat.toFixed(6)}</td>
+                  <td className="py-3 px-4 font-mono font-medium">{row.lng.toFixed(6)}</td>
                   <td className="py-3 px-4 text-emerald-800 font-medium">
                     {row.location}
                   </td>
@@ -131,12 +154,6 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                   </td>
                   <td className="py-3 px-4 font-semibold text-slate-800">
                     {row.temp.toFixed(2)}
-                  </td>
-                  <td className="py-3 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-900 font-medium">
-                      <span>{row.activity ? 'ดูพฤติกรรม' : 'พิกัด'}</span>
-                      <ChevronRight className="w-3 h-3" />
-                    </span>
                   </td>
                 </tr>
               );

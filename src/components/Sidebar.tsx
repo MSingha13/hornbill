@@ -1,20 +1,16 @@
 import React from 'react';
-import { Home, MapPin, BarChart3, Mic, Camera, Leaf, Info } from 'lucide-react';
+import { Home, MapPin, Info, Leaf } from 'lucide-react';
 
-export type ActiveTab = 'overview' | 'map' | 'reports' | 'camera' | 'about';
+export type ActiveTab = 'overview' | 'map' | 'about';
 
 interface SidebarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  onOpenVoice: () => void;
-  isVoiceActive?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  onOpenVoice,
-  isVoiceActive,
 }) => {
   return (
     <aside className="w-64 bg-[#0a2318] text-white flex flex-col justify-between shrink-0 shadow-2xl relative z-20 border-r border-emerald-950">
@@ -68,47 +64,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <MapPin className="w-5 h-5" />
             <span>แผนที่ติดตาม</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('reports')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'reports'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-emerald-100/80 hover:bg-emerald-900/40 hover:text-white'
-            }`}
-          >
-            <BarChart3 className="w-5 h-5" />
-            <span>รายงาน</span>
-          </button>
-
-          <button
-            onClick={onOpenVoice}
-            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer group ${
-              isVoiceActive
-                ? 'bg-gradient-to-r from-amber-500 to-emerald-600 text-white shadow-lg animate-pulse'
-                : 'text-amber-200/90 bg-emerald-950/80 hover:bg-emerald-900/70 border border-amber-500/20'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Mic className="w-5 h-5 text-amber-400 group-hover:scale-110 transition" />
-              <span>สนทนาเสียง Live</span>
-            </div>
-            <span className="text-[10px] bg-amber-400/20 text-amber-300 font-bold px-1.5 py-0.5 rounded uppercase border border-amber-400/30">
-              AI
-            </span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('camera')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
-              activeTab === 'camera'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-emerald-100/80 hover:bg-emerald-900/40 hover:text-white'
-            }`}
-          >
-            <Camera className="w-5 h-5" />
-            <span>กล้องรังเทียม</span>
           </button>
 
           <button

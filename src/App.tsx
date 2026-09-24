@@ -5,9 +5,6 @@ import { MetricCards } from './components/MetricCards';
 import { TrackingMap } from './components/TrackingMap';
 import { LatestStatusCard } from './components/LatestStatusCard';
 import { HistoryTable } from './components/HistoryTable';
-import { VoiceLiveModal } from './components/VoiceLiveModal';
-import { ReportsView } from './components/ReportsModal';
-import { CameraView } from './components/CameraView';
 import { AboutProject } from './components/AboutProject';
 import { HORNBILLS_LIST } from './data/hornbillData';
 import { HornbillProfile, TrackingPoint } from './types';
@@ -19,7 +16,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   const [selectedPoint, setSelectedPoint] = useState<TrackingPoint | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [liveSyncError, setLiveSyncError] = useState<string | null>(null);
 
   // Function to fetch live telemetry from Google Apps Script endpoint via backend proxy
@@ -126,7 +122,9 @@ export default function App() {
 
   const handleViewOnMap = () => {
     setActiveTab('overview');
-    setSelectedPoint(selectedHornbill.latestPoint);
+    const target = selectedPoint || selectedHornbill.latestPoint;
+    // Force re-trigger selection flyTo by updating state
+    setSelectedPoint({ ...target });
   };
 
   return (
@@ -135,17 +133,16 @@ export default function App() {
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenVoice={() => setIsVoiceOpen(true)}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Background Forest Panorama Overlay */}
         <div
-          className="absolute inset-0 opacity-20 pointer-events-none bg-cover bg-center"
-          style={{ backgroundImage: `url('/assets/hornbill_canopy_bg.jpg')` }}
+          className="absolute inset-0 pointer-events-none bg-cover bg-top bg-no-repeat transition-all duration-700 opacity-60"
+          style={{ backgroundImage: `url('/assets/hornbill_mountain_bg.jpg')` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100/95 via-slate-50/90 to-emerald-50/80 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-sky-100/30 via-slate-50/50 to-emerald-950/20 backdrop-blur-[0.5px] pointer-events-none" />
 
         {/* Top Header */}
         <Header
@@ -158,7 +155,6 @@ export default function App() {
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
           onExportCSV={handleExportCSV}
-          onOpenVoice={() => setIsVoiceOpen(true)}
         />
 
         {/* Scrollable Viewport */}
@@ -201,8 +197,12 @@ export default function App() {
                   </div>
                 )}
 
-                {/* 4 Metric KPI Cards */}
-                <MetricCards hornbill={selectedHornbill} />
+                {/* 4 Metric KPI Cards with Dynamic Selected Point */}
+                <MetricCards
+                  hornbill={selectedHornbill}
+                  selectedPoint={selectedPoint}
+                  onResetToLatest={() => setSelectedPoint(null)}
+                />
 
                 {/* Map & Latest Status Card Row */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -215,11 +215,13 @@ export default function App() {
                     />
                   </div>
 
-                  {/* Latest Status Profile Card (4 cols) */}
+                  {/* Latest / Selected Status Profile Card (4 cols) */}
                   <div className="lg:col-span-4">
                     <LatestStatusCard
                       hornbill={selectedHornbill}
+                      selectedPoint={selectedPoint}
                       onViewOnMap={handleViewOnMap}
+                      onResetToLatest={() => setSelectedPoint(null)}
                     />
                   </div>
                 </div>
@@ -261,19 +263,6 @@ export default function App() {
               </div>
             )}
 
-            {/* Reports Tab */}
-            {activeTab === 'reports' && (
-              <ReportsView hornbill={selectedHornbill} />
-            )}
-
-            {/* Camera View Tab */}
-            {activeTab === 'camera' && (
-              <CameraView
-                hornbill={selectedHornbill}
-                onOpenVoice={() => setIsVoiceOpen(true)}
-              />
-            )}
-
             {/* About Project Tab */}
             {activeTab === 'about' && (
               <AboutProject />
@@ -281,13 +270,6 @@ export default function App() {
           </div>
         </main>
       </div>
-
-      {/* Voice Conversation Modal (Gemini 3.8 Live API) */}
-      <VoiceLiveModal
-        isOpen={isVoiceOpen}
-        onClose={() => setIsVoiceOpen(false)}
-        hornbill={selectedHornbill}
-      />
     </div>
   );
 }

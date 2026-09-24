@@ -5,24 +5,30 @@ export const AboutProject: React.FC = () => {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
       {/* Title */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm text-center">
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
-          <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-            โครงการชีวานุรักษ์ (Bio-Conservation)
-          </span>
-          <span className="bg-sky-100 text-sky-800 text-xs font-semibold px-2.5 py-1 rounded-full">
-            พันธกิจเพื่อความหลากหลายทางชีวภาพ
-          </span>
+      <div className="relative bg-white/95 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm text-center overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-25 pointer-events-none bg-cover bg-top"
+          style={{ backgroundImage: `url('/assets/hornbill_mountain_bg.jpg')` }}
+        />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-2">
+            <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+              โครงการชีวานุรักษ์ (Bio-Conservation)
+            </span>
+            <span className="bg-sky-100 text-sky-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+              พันธกิจเพื่อความหลากหลายทางชีวภาพ
+            </span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
+            ระบบติดตามนกกก HORNBILL TRACKING
+          </h2>
+          <p className="text-sm text-emerald-800 font-semibold mt-1">
+            ความร่วมมือทางยุทธศาสตร์ระหว่าง GISTDA • BSRC • สวนสัตว์เปิดเขาเขียว
+          </p>
+          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto mt-3 leading-relaxed">
+            โครงการติดตามพฤติกรรมและการกระจายตัวของนกกาฮัง/นกกก (Great Hornbill) ผ่านปลอกคอดาวเทียมพลังงานแสงอาทิตย์ เพื่อฟื้นฟูระบบนิเวศป่าต้นน้ำและประเมินประสิทธิภาพการกระจายเมล็ดพันธุ์ในผืนป่าภาคเหนือของประเทศไทย
+          </p>
         </div>
-        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-2 tracking-tight">
-          ระบบติดตามนกกก HORNBILL TRACKING
-        </h2>
-        <p className="text-sm text-emerald-800 font-semibold mt-1">
-          ความร่วมมือทางยุทธศาสตร์ระหว่าง GISTDA • BSRC • สวนสัตว์เปิดเขาเขียว
-        </p>
-        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto mt-3 leading-relaxed">
-          โครงการติดตามพฤติกรรมและการกระจายตัวของนกกาฮัง/นกกก (Great Hornbill) ผ่านปลอกคอดาวเทียมพลังงานแสงอาทิตย์ เพื่อฟื้นฟูระบบนิเวศป่าต้นน้ำและประเมินประสิทธิภาพการกระจายเมล็ดพันธุ์ในผืนป่าภาคเหนือของประเทศไทย
-        </p>
       </div>
 
       {/* 3 Organizations: GISTDA, BSRC, สวนสัตว์เปิดเขาเขียว */}

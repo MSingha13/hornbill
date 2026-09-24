@@ -1,17 +1,22 @@
 import React from 'react';
-import { RefreshCw, MapPin, BatteryCharging, Thermometer, Compass, Calendar, Clock, Feather } from 'lucide-react';
-import { HornbillProfile } from '../types';
+import { RefreshCw, MapPin, BatteryCharging, Thermometer, Compass, RotateCcw } from 'lucide-react';
+import { HornbillProfile, TrackingPoint } from '../types';
 
 interface LatestStatusCardProps {
   hornbill: HornbillProfile;
+  selectedPoint?: TrackingPoint | null;
   onViewOnMap: () => void;
+  onResetToLatest?: () => void;
 }
 
 export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
   hornbill,
+  selectedPoint,
   onViewOnMap,
+  onResetToLatest,
 }) => {
-  const latest = hornbill.latestPoint;
+  const isCustomPoint = Boolean(selectedPoint && selectedPoint.index !== hornbill.latestPoint.index);
+  const active = selectedPoint || hornbill.latestPoint;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4.5 flex flex-col justify-between h-[520px]">
@@ -19,15 +24,35 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                isCustomPoint ? 'bg-amber-500' : 'bg-emerald-500 animate-ping'
+              }`}
+            />
             <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-              ตำแหน่งล่าสุด
+              {isCustomPoint ? `จุดพิกัดที่ #${active.index}` : 'ตำแหน่งล่าสุด'}
             </h3>
+            {isCustomPoint && (
+              <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded border border-amber-200">
+                ประวัติ
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-1 text-[11px] text-slate-500">
-            <RefreshCw className="w-3 h-3 text-emerald-600" />
-            <span>อัปเดตล่าสุด: {latest.date} {latest.time} น.</span>
-          </div>
+
+          {isCustomPoint && onResetToLatest ? (
+            <button
+              onClick={onResetToLatest}
+              className="flex items-center gap-1 text-[11px] text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded-lg border border-emerald-200 transition cursor-pointer"
+            >
+              <RotateCcw className="w-3 h-3 text-emerald-600" />
+              <span>กลับจุดล่าสุด</span>
+            </button>
+          ) : (
+            <div className="flex items-center gap-1 text-[11px] text-slate-500">
+              <RefreshCw className="w-3 h-3 text-emerald-600" />
+              <span>อัปเดต: {active.date} {active.time} น.</span>
+            </div>
+          )}
         </div>
 
         {/* Hornbill Photo */}
@@ -43,9 +68,14 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
           <div className="absolute bottom-2 left-2 bg-emerald-900/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded-lg">
             {hornbill.name}
           </div>
+          {isCustomPoint && (
+            <div className="absolute bottom-2 right-2 bg-amber-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+              จุดที่ {active.index} ({active.time} น.)
+            </div>
+          )}
         </div>
 
-        {/* Metadata Details Grid matching Image 2 */}
+        {/* Metadata Details Grid */}
         <div className="space-y-1.5 text-xs text-slate-700">
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
             <span className="text-slate-500 font-medium">รหัสติดตาม</span>
@@ -60,29 +90,33 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
           </div>
 
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
-            <span className="text-slate-500 font-medium">วันที่</span>
-            <span className="font-medium text-slate-800">{latest.date}</span>
+            <span className="text-slate-500 font-medium">วันที่บันทึก</span>
+            <span className="font-medium text-slate-800">{active.date}</span>
           </div>
 
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
-            <span className="text-slate-500 font-medium">เวลา</span>
-            <span className="font-medium text-slate-800">{latest.time} น.</span>
+            <span className="text-slate-500 font-medium">เวลาบันทึก</span>
+            <span className="font-medium text-slate-800">{active.time} น.</span>
           </div>
 
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
             <span className="text-slate-500 font-medium">ละติจูด</span>
-            <span className="font-mono font-bold text-slate-900">{latest.lat.toFixed(4)}° N</span>
+            <span className="font-mono font-bold text-slate-900">
+              {Math.abs(active.lat).toFixed(6)}° {active.lat >= 0 ? 'N' : 'S'}
+            </span>
           </div>
 
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
             <span className="text-slate-500 font-medium">ลองจิจูด</span>
-            <span className="font-mono font-bold text-slate-900">{latest.lng.toFixed(4)}° E</span>
+            <span className="font-mono font-bold text-slate-900">
+              {Math.abs(active.lng).toFixed(6)}° {active.lng >= 0 ? 'E' : 'W'}
+            </span>
           </div>
 
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
             <span className="text-slate-500 font-medium">พื้นที่</span>
-            <span className="font-medium text-emerald-800 text-right max-w-[200px] truncate" title={latest.address || latest.location}>
-              {latest.address ? latest.address : `${latest.location} จ.ลำปาง`}
+            <span className="font-medium text-emerald-800 text-right max-w-[200px] truncate" title={active.address || active.location}>
+              {active.address || active.location}
             </span>
           </div>
 
@@ -90,11 +124,11 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
           <div className="flex items-center justify-between py-0.5 border-b border-slate-50">
             <span className="text-slate-500 font-medium">ระดับแบตเตอรี่</span>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-emerald-700">{latest.battery.toFixed(2)}%</span>
+              <span className="font-bold text-emerald-700">{active.battery.toFixed(2)}%</span>
               <div className="w-14 bg-slate-200 rounded-full h-2 overflow-hidden">
                 <div
-                  className="bg-emerald-500 h-2 rounded-full"
-                  style={{ width: `${Math.min(100, latest.battery)}%` }}
+                  className="bg-emerald-500 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min(100, Math.max(0, active.battery))}%` }}
                 />
               </div>
             </div>
@@ -105,20 +139,20 @@ export const LatestStatusCard: React.FC<LatestStatusCardProps> = ({
             <span className="text-slate-500 font-medium">อุณหภูมิอุปกรณ์</span>
             <div className="flex items-center gap-1 font-bold text-amber-600">
               <Thermometer className="w-3.5 h-3.5" />
-              <span>{latest.temp.toFixed(2)} °C</span>
+              <span>{active.temp.toFixed(2)} °C</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Action Button: "ดูตำแหน่งบนแผนที่" matching Image 2 */}
+      {/* Action Button: "ดูตำแหน่งบนแผนที่" */}
       <div className="pt-2">
         <button
           onClick={onViewOnMap}
           className="w-full bg-[#dcfce7] hover:bg-[#bbf7d0] text-emerald-900 font-bold text-xs py-2.5 px-4 rounded-xl border border-emerald-200 transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs hover:shadow active:scale-[0.99]"
         >
           <Compass className="w-4 h-4 text-emerald-700" />
-          <span>ดูตำแหน่งบนแผนที่</span>
+          <span>{isCustomPoint ? `เลื่อนไปยังจุดที่ #${active.index} บนแผนที่` : 'ดูตำแหน่งบนแผนที่'}</span>
         </button>
       </div>
     </div>

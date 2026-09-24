@@ -19,7 +19,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ hornbill }) => {
             การวิเคราะห์เส้นทางการบินและพฤติกรรม: {hornbill.name} ({hornbill.code})
           </h2>
           <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed">
-            ข้อมูลพิกัดดาวเทียม GISTDA บันทึกการเคลื่อนที่จากสถานีปล่อยตัวอุทยานแห่งชาติดอยขุนตาล ข้ามแนวเขาสู่พื้นที่ป่าดิบเขาอุทยานแห่งชาติแจ้ซ้อน จังหวัดลำปาง
+            ข้อมูลพิกัดส่งตรงจากระบบเซนเซอร์ดาวเทียม บันทึกการเคลื่อนที่ ตำแหน่ง และพารามิเตอร์ของ {hornbill.name} ({hornbill.code})
           </p>
         </div>
       </div>
@@ -58,7 +58,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({ hornbill }) => {
             <Battery className="w-5 h-5" />
           </div>
           <p className="text-xs text-slate-500 font-medium">สถานะพลังงานโซลาร์</p>
-          <h3 className="text-2xl font-black text-slate-900 mt-1">81.25%</h3>
+          <h3 className="text-2xl font-black text-slate-900 mt-1">{hornbill.latestPoint.battery.toFixed(2)}%</h3>
           <p className="text-[11px] text-teal-700 font-medium mt-1">อัตราประจุสมดุลดีเยี่ยม</p>
         </div>
       </div>
